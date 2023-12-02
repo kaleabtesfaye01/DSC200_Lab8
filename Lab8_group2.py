@@ -3,7 +3,7 @@ Group 2 Lab8
 Kaleab Alemu
 Manogya Aryal
 
-This program takes data from 2 API's and returns the result in a csv file. One of the API requires authentication
+This program takes data from 2 APIs and returns the result in a csv file. One of the API requires authentication
 (The cat API) to access the data while the other (The dog API) does not.
 
 It has three functions: catAPI, dogAPI and the main. The catAPI is used to access the cat API and return the data in
@@ -19,7 +19,6 @@ import pandas as pd
 
 # Defining a function called catAPI
 def catAPI():
-
     """
     Retrieves cat images using TheCatAPI and stores the data in a CSV file.
 
@@ -40,25 +39,39 @@ def catAPI():
     API_KEY = 'live_vLF8rPRIuD6DZwo3CgsZuxvS6EDJjsu6HjpnJ1LvoJs3nmEIqq6V8HXb7lmxC5w7'
 
     # Constructing the URL to fetch cat images with a limit of 10 using the Cat API
-    url = f'https://api.thecatapi.com/v1/images/search?limit=10&API_KEY={API_KEY}'
+    url = f'https://api.thecatapi.com/v1/images/search?limit=10&api_key={API_KEY}&has_breeds=0'
 
     # Sending a GET request to the Cat API using the constructed URL
-    data = requests.get(url)
+    response = requests.get(url)
 
-    # Creating a Pandas DataFrame from the JSON response received from the API
-    df = pd.DataFrame(data.json())
+    # Checking if the request was successful (status code 200)
+    if response.status_code == 200:
+        # Load JSON data from the response
+        data = response.json()
 
-    # Setting the index of the DataFrame to the 'id' column and modifying the DataFrame in place
-    df.set_index('id', inplace=True)
+        # Creating a Pandas DataFrame from the JSON response received from the API
+        df = pd.DataFrame(data)
 
-    # Saving the DataFrame to a CSV file named 'cat_group2.csv'
-    df.to_csv('cat_group2.csv')
+        # Drop unwanted columns: 'categories' and 'breeds' (mostly null values)
+        df.drop(columns=['categories', 'breeds'], inplace=True)
+
+        # Set the 'id' column as the index for easier identification and retrieval
+        df.set_index('id', inplace=True)
+
+        # Saving the DataFrame to a CSV file named 'cat_group2.csv'
+        df.to_csv('cat_group2.csv')
+    else:
+        print(f"Error: Unable to fetch data. Status code: {response.status_code}")
+
+
 """
 This function extracts data (which is dog images) from Dog API we found in a public API repository in git, and outputs
 the result in  a csv file. This API does not require authentication. 
 """
+
+
 def dogAPI():
-    api_url = 'https://dog.ceo/api/breeds/image/random/10' # this is the url for the api we are accessing.Here
+    api_url = 'https://dog.ceo/api/breeds/image/random/10'  # this is the url for the api we are accessing.Here
     # The "/api/breeds/image/random/10" endpoint is used, and the 10 specifies the limit of dog images to retrieve.
 
     # Sending a GET request to the Dog API using the constructed URL
@@ -78,26 +91,23 @@ def dogAPI():
 
         # Saving the DataFrame to a CSV file named 'dog_group2.csv'
         df.to_csv('dog_group2.csv')
-    else: # printing an error message if the url is not accessible
+    else:  # printing an error message if the url is not accessible
         print(f"Error: Unable to fetch data. Status code: {response.status_code}")
+
 
 # this is the main function that prompts user for input and returns the dataset of user's choice.
 def main():
     user_choice = input("Enter what dataset you would like to access \n 1. Cat \n 2. Dogs \n: ")
-    if user_choice == "1":# Calling the catAPI function to execute the code if the user chooses to get dataset from
+    if user_choice == "1":  # Calling the catAPI function to execute the code if the user chooses to get dataset from
         # CAT API
         catAPI()
-    elif user_choice == "2": # Calling the dogAPI function to execute the code if the user chooses to get dataset from
+    elif user_choice == "2":  # Calling the dogAPI function to execute the code if the user chooses to get dataset from
         # dog API
         dogAPI()
-    else: # printing an error message if a user types invalid option and calling the main function again.
+    else:  # printing an error message if a user types invalid option and calling the main function again.
         print("Invalid answer")
         main()
+
+
 # Call the main function
 main()
-
-
-
-
-
-
